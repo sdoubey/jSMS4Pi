@@ -69,7 +69,7 @@ public class CMGSText extends AAT {
 	@Override
 	protected void parseCommandResult(String response) {
 		Matcher matcher = indexPattern.matcher(response);
-		if (!matcher.matches()) {
+		if (!matcher.find()) {
 			throw new AtParseException(response, indexPattern);
 		}
 		index = Integer.parseInt(matcher.group(1));

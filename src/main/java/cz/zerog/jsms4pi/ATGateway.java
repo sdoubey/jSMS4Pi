@@ -36,7 +36,6 @@ import cz.zerog.jsms4pi.at.AT;
 import cz.zerog.jsms4pi.at.ATE0;
 import cz.zerog.jsms4pi.at.ATZ;
 import cz.zerog.jsms4pi.at.CGMM;
-import cz.zerog.jsms4pi.at.CGMR;
 import cz.zerog.jsms4pi.at.CGSN;
 import cz.zerog.jsms4pi.at.CLIP;
 import cz.zerog.jsms4pi.at.CMEE;
@@ -705,16 +704,12 @@ public class ATGateway implements Gateway {
 
 	public void printModemInfo() throws GatewayException {
 		System.out.print("Manufacturer name: ");
-		System.out.println(modem.send(new GMI()).getManufaturer());
 
 		System.out.print("Manufacturer OS version: ");
-		System.out.println(modem.send(new CGMR()).getVersion());
 
 		System.out.print("IMEI: ");
-		System.out.println(modem.send(new CGSN()).getIMEI());
 
 		System.out.print("Model description: ");
-		System.out.println(modem.send(new CGMM()).getModel());
 
 		// select optimal modem configuration
 		config.selectModem(this.getManufactures());

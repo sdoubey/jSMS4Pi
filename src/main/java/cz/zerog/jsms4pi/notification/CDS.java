@@ -71,7 +71,7 @@ public final class CDS implements Notification {
 	public static CDS tryParse(String notification, UnknownNotifications notifications) {
 		Matcher matcher = pattern.matcher(notification);
 
-		if (matcher.matches()) {
+		if (matcher.find()) {
 			return new CDS(matcher, notification);
 		}
 		// throw new AtParseException(notification, pattern);
