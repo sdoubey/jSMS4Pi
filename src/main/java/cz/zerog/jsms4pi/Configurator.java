@@ -64,6 +64,10 @@ public class Configurator {
 	void selectModem(ModemInformation modemInfo) {
 		for (String pathName : modemInfo.getNames()) {
 			Properties prop = getProperties(pathName + ".properties");
+			if (prop == null) {
+				prop = getProperties("modem/" + pathName + ".properties");
+			}
+
 			log.info("Searching: '{}.propeties' ", pathName);
 			if (prop != null) {
 				log.info("Used '{}' setting", pathName);

@@ -127,9 +127,9 @@ public class ATGateway implements Gateway {
 	private Status status = Status.CLOSED;
 
 	/*
-	 * Saved value of last network status (CREG). If set CREG with <n>=2, is
-	 * enable network registration and location information unsolicited
-	 * notification. For separation only network status is saved its last state.
+	 * Saved value of last network status (CREG). If set CREG with <n>=2, is enable
+	 * network registration and location information unsolicited notification. For
+	 * separation only network status is saved its last state.
 	 */
 	private NetworkStatus cregLastNetworkStatus = null;
 
@@ -143,7 +143,7 @@ public class ATGateway implements Gateway {
 	 */
 	private OutboundMessageGatewayListener smsStatusListener;
 	private InboundCallGatewayListener callListener;
-	private InboundMessageGatewayListener inboundMessageLinstener;
+	private InboundMessageGatewayListener inboundMessageListener;
 	private NetworkStatusGatewayListener networkStatusListener;
 	private NetworkCellGatewayListener networkCellListener;
 	private GatewayStatusGatewayListener gatewayStatusListener;
@@ -160,7 +160,7 @@ public class ATGateway implements Gateway {
 	 * @param serialPortName
 	 * @return
 	 */
-	public static Gateway getDefaultFactory(String serialPortName) {
+	public static ATGateway getDefaultFactory(String serialPortName) {
 		return getDefaultFactory(serialPortName, BOUDRATE);
 	}
 
@@ -169,34 +169,29 @@ public class ATGateway implements Gateway {
 	 * 
 	 * RS232 setup: 8N1, Time out of response: 30s
 	 * 
-	 * @param portname
-	 *            serial port
-	 * @param boudrate
-	 *            boud rate speed of modem
+	 * @param portname serial port
+	 * @param boudrate boud rate speed of modem
 	 * @return new Gateway
 	 */
-	public static Gateway getDefaultFactory(String portname, int boudrate) {
+	public static ATGateway getDefaultFactory(String portname, int boudrate) {
 		return getDefaultFactory(portname, boudrate, DATA_BIT, STOP_BIT, PARITY, AT_RESPONSE_TO);
 	}
 
 	/**
 	 * Create a new instance of Gateway by serial port.
 	 * 
-	 * @param portname
-	 *            serial port
-	 * @param boudrate
-	 *            boud rate speed of modem
+	 * @param portname  serial port
+	 * @param boudrate  boud rate speed of modem
 	 * @param databit
 	 * @param stopbit
 	 * @param parity
-	 * @param atTimeOut
-	 *            time out of response
+	 * @param atTimeOut time out of response
 	 * @return new Gateway
 	 */
-	public static Gateway getDefaultFactory(String portname, int boudrate, int databit, int stopbit, int parity,
+	public static ATGateway getDefaultFactory(String portname, int boudrate, int databit, int stopbit, int parity,
 			int atTimeOut) {
 		Modem modem = new SerialModem(portname, boudrate, databit, stopbit, parity, atTimeOut);
-		Gateway gateway = new ATGateway(modem);
+		ATGateway gateway = new ATGateway(modem);
 		modem.setGatewayListener(gateway);
 		return gateway;
 	}
@@ -465,7 +460,7 @@ public class ATGateway implements Gateway {
 
 	@Override
 	public void setInboundMessageListener(InboundMessageGatewayListener listener) {
-		this.inboundMessageLinstener = listener;
+		this.inboundMessageListener = listener;
 	}
 
 	@Override
@@ -618,8 +613,8 @@ public class ATGateway implements Gateway {
 	}
 
 	private void createInboundMessageEvent(InboundMessage mess) {
-		if (inboundMessageLinstener != null) {
-			inboundMessageLinstener.inboundMessageEvent(new InboundMessageEvent(mess));
+		if (inboundMessageListener != null) {
+			inboundMessageListener.inboundMessageEvent(new InboundMessageEvent(mess));
 		}
 	}
 
