@@ -55,7 +55,7 @@ public class Configurator {
 	public static final String CNMI_DS = "CNMI.ds";
 
 	public Configurator() {
-		defaultProperties = getPropeties("modem/default.properties");
+		defaultProperties = getProperties("modem/default.properties");
 		if (defaultProperties == null) {
 			log.warn("Cannot load default properties!");
 		}
@@ -63,7 +63,7 @@ public class Configurator {
 
 	void selectModem(ModemInformation modemInfo) {
 		for (String pathName : modemInfo.getNames()) {
-			Properties prop = getPropeties(pathName + ".properties");
+			Properties prop = getProperties(pathName + ".properties");
 			log.info("Searching: '{}.propeties' ", pathName);
 			if (prop != null) {
 				log.info("Used '{}' setting", pathName);
@@ -155,7 +155,7 @@ public class Configurator {
 		return true;
 	}
 
-	private Properties getPropeties(String path) {
+	private Properties getProperties(String path) {
 		Properties p = null;
 		try {
 			// absolute path

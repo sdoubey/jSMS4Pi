@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -113,7 +114,13 @@ public final class Service implements Runnable {
 
 	public void removeGateway(Gateway gateway) {
 		try {
-			gateways.remove(gateway);
+			Iterator<Entry<String, Gateway>> gatewaysIt = gateways.entrySet().iterator();
+			while (gatewaysIt.hasNext()) {
+				if (gatewaysIt.next().getValue().equals(gateway)) {
+					gatewaysIt.remove();
+					break;
+				}
+			}
 			gateway.close();
 		} catch (Exception e) {
 			log.warn(e, e);
