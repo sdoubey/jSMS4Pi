@@ -40,6 +40,12 @@ public final class CMTI implements Notification {
     private final int index;
     private final String response;
     
+    public CMTI(TypeOfMemory memory, int index) {
+    	this.response = "";
+    	this.memory = memory;
+    	this.index = index;
+    }
+    
     public CMTI(Matcher matcher, String response) {
         memory = TypeOfMemory.valueOf(matcher.group(1));
         index = Integer.parseInt(matcher.group(2));

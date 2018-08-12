@@ -69,6 +69,8 @@ public interface Gateway {
 
 	public void sendMessage(OutboundMessage message) throws GatewayException;
 
+	public void fetchInMemorySms() throws GatewayException;
+	
 	public boolean isAlive();
 
 	public <T extends AAT> T directSendAtCommand(T cmd) throws GatewayException;

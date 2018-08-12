@@ -42,6 +42,8 @@ import cz.zerog.jsms4pi.at.CLIP;
 import cz.zerog.jsms4pi.at.CMEE;
 import cz.zerog.jsms4pi.at.CMGD;
 import cz.zerog.jsms4pi.at.CMGF;
+import cz.zerog.jsms4pi.at.CMGL;
+import cz.zerog.jsms4pi.at.CMGLMessage;
 import cz.zerog.jsms4pi.at.CMGR;
 import cz.zerog.jsms4pi.at.CMGS;
 import cz.zerog.jsms4pi.at.CMGSText;
@@ -321,6 +323,21 @@ public class ATGateway implements Gateway {
 		}
 
 		return true;
+	}
+
+	@Override
+	public void fetchInMemorySms() throws GatewayException {
+		if (!status.equals(Status.READY)) {
+			throw new GatewayException(GatewayException.GATEWAY_NOT_READY, modem.getPortName());
+		}
+
+		changeStatus(Status.BUSY);
+
+		CMGL cmgl = modem.send(new CMGL());
+
+		for (CMGLMessage message : cmgl.getMessages()) {
+			notify(new CMTI(mem1RW, message.getSMSIndex()));
+		}
 	}
 
 	@Override

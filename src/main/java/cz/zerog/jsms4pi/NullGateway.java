@@ -138,4 +138,10 @@ public class NullGateway extends Thread implements Gateway {
 
 	}
 
+	@Override
+	public void fetchInMemorySms() {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
