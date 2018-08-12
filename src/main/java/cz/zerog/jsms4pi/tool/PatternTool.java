@@ -34,7 +34,7 @@ public class PatternTool {
 	private PatternTool() {
 	}
 
-	public static final DateTimeFormatter TIME_STAMP_FORMATTER = DateTimeFormatter.ofPattern("yy/MM/dd,HH:mm:ssxx");
+	public static final DateTimeFormatter TIME_STAMP_FORMATTER = DateTimeFormatter.ofPattern("yy/MM/dd,HH:mm:ssX");
 
 	/**
 	 * Phone number in format +420731810967 or 731810967
