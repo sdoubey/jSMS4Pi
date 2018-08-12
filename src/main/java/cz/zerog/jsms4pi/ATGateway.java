@@ -326,21 +326,6 @@ public class ATGateway implements Gateway {
 	}
 
 	@Override
-	public void fetchInMemorySms() throws GatewayException {
-		if (!status.equals(Status.READY)) {
-			throw new GatewayException(GatewayException.GATEWAY_NOT_READY, modem.getPortName());
-		}
-
-		changeStatus(Status.BUSY);
-
-		CMGL cmgl = modem.send(new CMGL());
-
-		for (CMGLMessage message : cmgl.getMessages()) {
-			notify(new CMTI(mem1RW, message.getSMSIndex()));
-		}
-	}
-
-	@Override
 	public void notify(Notification notification) {
 		try {
 			/*
@@ -593,6 +578,15 @@ public class ATGateway implements Gateway {
 		}
 
 		throw new GatewayException("The Message Service Address has invalid format", modem.getPortName());
+	}
+
+	@Override
+	public void fetchInMemorySms() throws GatewayException {
+		CMGL cmgl = modem.send(new CMGL());
+
+		for (CMGLMessage message : cmgl.getMessages()) {
+			notify(new CMTI(mem1RW, message.getSMSIndex()));
+		}
 	}
 
 	private boolean findOutboudMessage(int messIndex, SPStatus messStatus) {
