@@ -85,8 +85,6 @@ public class SupportedCommandsExample {
 
 		Tool.pressEnter();
 
-		Tool.activeLoggingToFile();
-
 		new SupportedCommandsExample(port);
 	}
 }

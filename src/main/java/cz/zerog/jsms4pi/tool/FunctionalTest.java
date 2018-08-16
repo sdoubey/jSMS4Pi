@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.zerog.jsms4pi.Configurator;
 import cz.zerog.jsms4pi.Gateway;
@@ -69,7 +69,7 @@ import cz.zerog.jsms4pi.notification.RING;
  */
 public class FunctionalTest extends NullGateway {
 
-	private final Logger log = LogManager.getLogger();
+	private final Logger log = LoggerFactory.getLogger(FunctionalTest.class);
 
 	private final static String VERSION = "1.0";
 
@@ -116,10 +116,9 @@ public class FunctionalTest extends NullGateway {
 			supportedStorage(port);
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
-			log.error(e, e);
+			log.error("FunctionalTest", e);
 		} catch (GatewayException e) {
-			log.error(e, e);
-			System.out.println("Port: " + e.getPortName() + ", Error: " + e.getErrorMessage());
+			log.error("FunctionalTest", e);
 		}
 
 		/*
@@ -130,12 +129,11 @@ public class FunctionalTest extends NullGateway {
 			testInfo = modemInfo != null;
 			Thread.sleep(500);
 		} catch (InterruptedException e) {
-			log.error(e, e);
+			log.error("FunctionalTest", e);
 			testInfo = false;
 		} catch (GatewayException e) {
-			log.error(e, e);
+			log.error("FunctionalTest", e);
 			testInfo = false;
-			System.out.println("Port: " + e.getPortName() + ", Error: " + e.getErrorMessage());
 		}
 
 		/*
@@ -146,12 +144,11 @@ public class FunctionalTest extends NullGateway {
 				testInboundCall = inboundCall(port);
 				Thread.sleep(500);
 			} catch (IOException | InterruptedException e) {
-				log.error(e, e);
+				log.error("FunctionalTest", e);
 				testInboundCall = false;
 			} catch (GatewayException e) {
-				log.error(e, e);
+				log.error("FunctionalTest", e);
 				testInboundCall = false;
-				System.out.println("Port: " + e.getPortName() + ", Error: " + e.getErrorMessage());
 			}
 		}
 
@@ -185,17 +182,16 @@ public class FunctionalTest extends NullGateway {
 				dotter.interrupt();
 				Thread.sleep(500);
 			} catch (IOException | InterruptedException e) {
-				log.error(e, e);
+				log.error("FunctionalTest", e);
 			} catch (GatewayException e) {
-				log.error(e, e);
-				System.out.println("Port: " + e.getPortName() + ", Error: " + e.getErrorMessage());
+				log.error("FunctionalTest", e);
 			} finally {
 				dotter.interrupt();
 
 				try {
 					modem.close();
 				} catch (GatewayException e) {
-					log.error(e, e);
+					log.error("FunctionalTest", e);
 				}
 			}
 		}
@@ -229,17 +225,16 @@ public class FunctionalTest extends NullGateway {
 				}
 
 			} catch (IOException e) {
-				log.error(e, e);
+				log.error("FunctionalTest", e);
 			} catch (GatewayException e) {
-				log.error(e, e);
-				System.out.println("Port: " + e.getPortName() + ", Error: " + e.getErrorMessage());
+				log.error("FunctionalTest", e);
 			} finally {
 				dotter.interrupt();
 
 				try {
 					modem.close();
 				} catch (GatewayException e) {
-					log.error(e, e);
+					log.error("FunctionalTest", e);
 				}
 			}
 		}
@@ -340,7 +335,7 @@ public class FunctionalTest extends NullGateway {
 					}
 
 				} catch (Exception e) {
-					log.warn(e, e);
+					log.warn("FunctionalTest", e);
 					fail = true;
 				} finally {
 
@@ -364,8 +359,6 @@ public class FunctionalTest extends NullGateway {
 			 * Delivery status into TE
 			 */
 			if (notification instanceof CDS) {
-				CDS cds = (CDS) notification;
-
 				// stop prints dots
 				try {
 					dotter.interrupt();
@@ -412,7 +405,7 @@ public class FunctionalTest extends NullGateway {
 						fail = true;
 					}
 				} catch (Exception e) {
-					log.warn(e, e);
+					log.warn("FunctionalTest", e);
 					fail = true;
 				} finally {
 
@@ -445,7 +438,7 @@ public class FunctionalTest extends NullGateway {
 			}
 
 		} catch (GatewayException | AtParseException e) {
-			log.error(e, e);
+			log.error("FunctionalTest", e);
 		}
 	}
 
@@ -705,19 +698,18 @@ public class FunctionalTest extends NullGateway {
 				+ "   - inbound / outbound text messages%n"
 				+ "%nIf the library is missing configuration file for the modem, it will generate it.%n%n" +
 
-		"Warning: This test will try to send two text messages to itself to test inbount / outbound messages.%n%n ---%n"));
+				"Warning: This test will try to send two text messages to itself to test inbount / outbound messages.%n%n ---%n"));
 
-		Tool.showHelp(args,
-				String.format("Arguments:%n   -p <port name> 	Name of a serial port%n"
-						+ "   -d <number> 		Modem phone number%n"
-						+ "   -s <number> 		Number of Message Service Center (optionally)%n"
-						+ "   --skip-call 		Skip a inbound call test (optionally)%n"
-						+ "   --skip-sms 		Skip send/received sms and delivery report through default method (optionally)%n"
-						+ "   --skip-sms-te 	Skip send/received sms and delivery report through second method (optionally)%n"
-						+ "   -h 			Print Help (this message) and exit%n"
-						+ "   -version 		Print version information and exit%n" +
+		Tool.showHelp(args, String.format("Arguments:%n   -p <port name> 	Name of a serial port%n"
+				+ "   -d <number> 		Modem phone number%n"
+				+ "   -s <number> 		Number of Message Service Center (optionally)%n"
+				+ "   --skip-call 		Skip a inbound call test (optionally)%n"
+				+ "   --skip-sms 		Skip send/received sms and delivery report through default method (optionally)%n"
+				+ "   --skip-sms-te 	Skip send/received sms and delivery report through second method (optionally)%n"
+				+ "   -h 			Print Help (this message) and exit%n"
+				+ "   -version 		Print version information and exit%n" +
 
-		"%nInteractive mode is activated when program is started without parameters"));
+				"%nInteractive mode is activated when program is started without parameters"));
 
 		Tool.showVersion(args, VERSION);
 
@@ -751,7 +743,6 @@ public class FunctionalTest extends NullGateway {
 
 		Tool.pressEnter();
 
-		Tool.activeLoggingToFile();
 		new FunctionalTest(port, dest, service, skipCall, skipSmsIntoTE, skipSmsDefault);
 	}
 

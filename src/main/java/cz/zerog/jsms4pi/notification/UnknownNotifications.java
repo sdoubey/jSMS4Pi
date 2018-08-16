@@ -23,44 +23,40 @@ package cz.zerog.jsms4pi.notification;
  */
 
 import cz.zerog.jsms4pi.ATResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  *
  * @author zerog
  */
 public class UnknownNotifications implements ATResponse {
-    
-    private final Logger log = LogManager.getLogger();
 
-    private final StringBuilder response = new StringBuilder();
-    
-    @Override
-    public String getResponse() {
-        return response.toString();
-    }
+	private final StringBuilder response = new StringBuilder();
 
-    @Override
-    public boolean appendResponse(String partOfResponse) {
-        response.append(partOfResponse);
-        if(response.indexOf("\r\n")==0) {
-            response.delete(0, 2);
-        }
-        return hasNextMessage();
-    }
-    
-    public boolean hasNextMessage() {
-        return response.indexOf("\r\n")>-1;
-    }
+	@Override
+	public String getResponse() {
+		return response.toString();
+	}
 
-    public String getNextMessage() {
-        String next = response.substring(0, response.indexOf("\r\n"));
-        response.delete(0, response.indexOf("\r\n")+2);
-        return next.replaceAll("\r\n", "");
-    }
+	@Override
+	public boolean appendResponse(String partOfResponse) {
+		response.append(partOfResponse);
+		if (response.indexOf("\r\n") == 0) {
+			response.delete(0, 2);
+		}
+		return hasNextMessage();
+	}
 
-    public boolean isEmpty() {
-        return response.length()<=0;
-    }
+	public boolean hasNextMessage() {
+		return response.indexOf("\r\n") > -1;
+	}
+
+	public String getNextMessage() {
+		String next = response.substring(0, response.indexOf("\r\n"));
+		response.delete(0, response.indexOf("\r\n") + 2);
+		return next.replaceAll("\r\n", "");
+	}
+
+	public boolean isEmpty() {
+		return response.length() <= 0;
+	}
 }

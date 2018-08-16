@@ -1,5 +1,7 @@
 package cz.zerog.jsms4pi;
 
+import java.io.IOException;
+
 /*
  * #%L
  * jSMS4Pi
@@ -27,8 +29,21 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.pi4j.io.gpio.exception.UnsupportedBoardType;
+import com.pi4j.io.serial.Baud;
+import com.pi4j.io.serial.DataBits;
+import com.pi4j.io.serial.Parity;
+import com.pi4j.io.serial.Serial;
+import com.pi4j.io.serial.SerialConfig;
+import com.pi4j.io.serial.SerialDataEvent;
+import com.pi4j.io.serial.SerialDataEventListener;
+import com.pi4j.io.serial.SerialFactory;
+import com.pi4j.io.serial.SerialPort;
+import com.pi4j.io.serial.SerialPortException;
+import com.pi4j.io.serial.StopBits;
 
 import cz.zerog.jsms4pi.at.AAT;
 import cz.zerog.jsms4pi.exception.GatewayException;
@@ -41,30 +56,25 @@ import cz.zerog.jsms4pi.notification.CREG;
 import cz.zerog.jsms4pi.notification.Notification;
 import cz.zerog.jsms4pi.notification.RING;
 import cz.zerog.jsms4pi.notification.UnknownNotifications;
-import jssc.SerialPort;
-import jssc.SerialPortEvent;
-import jssc.SerialPortEventListener;
-import jssc.SerialPortException;
-import jssc.SerialPortList;
 
 /**
  *
  * @author zerog
  */
-public class SerialModem implements Runnable, Modem, SerialPortEventListener, Thread.UncaughtExceptionHandler {
+public class SerialModem implements Runnable, Modem, SerialDataEventListener, Thread.UncaughtExceptionHandler {
 
 	// Logger
-	private final Logger log = LogManager.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(SerialModem.class);
 
 	/*
 	 * RS-232 setting
 	 */
 	private String portName;
-	protected SerialPort serialPort;
-	private final int DATA_BIT;
-	private final int STOP_BIT;
-	private final int PARITY;
-	private final int BOUDRATE;
+	protected Serial serialPort;
+	private final DataBits DATA_BIT;
+	private final StopBits STOP_BIT;
+	private final Parity PARITY;
+	private final Baud BOUDRATE;
 	private final int AT_TIMEOUT; // ms
 
 	/*
@@ -94,7 +104,8 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 	 */
 	private Thread notifyThread;
 
-	public SerialModem(String portName, int boudrate, int databit, int stopbit, int parity, int atTimeout) {
+	public SerialModem(String portName, Baud boudrate, DataBits databit, StopBits stopbit, Parity parity,
+			int atTimeout) {
 		this.BOUDRATE = boudrate;
 		this.AT_TIMEOUT = atTimeout;
 		this.DATA_BIT = databit;
@@ -102,19 +113,21 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 		this.PARITY = parity;
 		this.portName = portName;
 
+		this.serialPort = SerialFactory.createInstance();
+
 		log.info("SerialModem start (constructor)");
 	}
 
-	public SerialModem(String portName, int boudrate) {
-		this(portName, boudrate, 8, 1, SerialPort.PARITY_NONE, 30 * 1000);
+	public SerialModem(String portName, Baud boudrate) {
+		this(portName, boudrate, DataBits._8, StopBits._1, Parity.NONE, 30 * 1000);
 	}
 
-	public SerialModem(String portName, int boudrate, int atResponseTO) {
-		this(portName, boudrate, 8, 1, SerialPort.PARITY_NONE, atResponseTO);
+	public SerialModem(String portName, Baud boudrate, int atResponseTO) {
+		this(portName, boudrate, DataBits._8, StopBits._1, Parity.NONE, atResponseTO);
 	}
 
 	public SerialModem(String portName) {
-		this(portName, SerialPort.BAUDRATE_57600);
+		this(portName, Baud._57600);
 	}
 
 	@Override
@@ -123,7 +136,7 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 			this.close();
 			log.error("Modem was closed by uncaught exception.");
 		} catch (GatewayException e1) {
-			log.error(e1);
+			log.error("SerialModem", e1);
 		}
 		log.error("Uncaght Exception in Thread: " + t.getName(), e);
 	}
@@ -136,15 +149,12 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 
 		try {
 			close();
-			serialPort = new SerialPort(portName);
-			serialPort.openPort();
-			if (!serialPort.setParams(BOUDRATE, DATA_BIT, STOP_BIT, PARITY)) {
-				throw new GatewayException(GatewayException.SERIAL_ERROR, portName);
-			}
-			if (!serialPort.setEventsMask(SerialPort.MASK_RXCHAR)) {
-				throw new GatewayException(GatewayException.SERIAL_ERROR, portName);
-			}
-			serialPort.addEventListener(this);
+
+			SerialConfig config = new SerialConfig();
+			config.device(portName).baud(BOUDRATE).dataBits(DATA_BIT).stopBits(STOP_BIT).parity(PARITY);
+
+			serialPort.addListener(this);
+			serialPort.open(config);
 
 			// set and start thread
 			notifyThread = new Thread(this);
@@ -155,19 +165,21 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 
 			mode = Mode.READY;
 			log.info("Port opened '{}'", portName);
-		} catch (SerialPortException ex) {
-			throw new GatewayException(ex);
+		} catch (SerialPortException | IOException ex) {
+			throw new GatewayException(new SerialPortException(ex));
 		}
 	}
 
 	@Override
 	public void close() throws GatewayException {
-		if (serialPort != null && serialPort.isOpened()) {
+		if (serialPort != null && serialPort.isOpen()) {
 			try {
-				serialPort.closePort();
+				serialPort.removeListener(this);
+				serialPort.discardAll();
+				serialPort.close();
 				mode = Mode.NOT_OPEN;
-			} catch (SerialPortException ex) {
-				throw new GatewayException(ex);
+			} catch (IOException ex) {
+				throw new GatewayException(new SerialPortException(ex));
 			}
 		}
 		if (notifyThread != null) {
@@ -188,20 +200,20 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 		String request = cmd.getPrefix() + cmd.getRequest();
 		log.info("Request: {}", AAT.crrt(request));
 		try {
-			serialPort.writeString(request);
+			serialPort.write(request);
 			synchronized (cmd) {
 				cmd.wait(AT_TIMEOUT);
 			}
 
 			if (cmd.isStatus(AAT.Status.WAITING)) {
 				GatewayException e = new GatewayException(GatewayException.RESPONSE_EXPIRED, portName);
-				log.warn(e, e);
+				log.warn("SerialModem", e);
 				throw e;
 			}
 		} catch (InterruptedException ex) {
 			log.warn("Interuppted, while wait for answer");
-		} catch (SerialPortException ex) {
-			throw new GatewayException(ex);
+		} catch (IOException ex) {
+			throw new GatewayException(new SerialPortException(ex));
 		}
 		atResponse = null;
 		notifyState = NotifyState.READY;
@@ -221,13 +233,13 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 	}
 
 	@Override
-	public void serialEvent(SerialPortEvent event) {
+	public void dataReceived(SerialDataEvent event) {
 		// if received some bytes
-		if (event.getEventValue() > 0) {
-			try {
+		try {
+			if (event.length() > 0) {
 
 				// read it
-				String response = serialPort.readString();
+				String response = event.getAsciiString();
 
 				// log.info("NATIVE: [{}]", crrt(response));
 
@@ -282,15 +294,15 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 					break;
 				}
 
-			} catch (Exception ex) {
-				log.warn(ex, ex);
 			}
+		} catch (IOException | InterruptedException e) {
+			log.warn("SerialModem", e);
 		}
 	}
 
 	@Override
 	public int getSpeed() {
-		return BOUDRATE;
+		return BOUDRATE.getValue();
 	}
 
 	@Override
@@ -320,12 +332,16 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 		try {
 			notificationQueue.put(notification);
 		} catch (InterruptedException e) {
-			log.error(e, e);
+			log.error("SerialModem", e);
 		}
 	}
 
 	public static String[] getAvailablePorts() {
-		return SerialPortList.getPortNames();
+		try {
+			return new String[] { SerialPort.getDefaultPort() };
+		} catch (UnsupportedBoardType | IOException | InterruptedException e) {
+			return new String[0];
+		}
 	}
 
 	private Notification findNotification(String notificationMessage, UnknownNotifications notifications) {
@@ -362,8 +378,7 @@ public class SerialModem implements Runnable, Modem, SerialPortEventListener, Th
 	}
 
 	private enum NotifyState {
-		READY,
-		AT,
-		NOTIFY;
+		READY, AT, NOTIFY;
 	}
+
 }

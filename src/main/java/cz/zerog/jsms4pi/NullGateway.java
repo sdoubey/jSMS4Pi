@@ -4,7 +4,7 @@ package cz.zerog.jsms4pi;
  * #%L
  * jSMS4Pi
  * %%
- * Copyright (C) 2015 jSMS4Pi
+ * Copyright (C) 2015 - 2018 jSMS4Pi
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -22,8 +22,9 @@ package cz.zerog.jsms4pi;
  * #L%
  */
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cz.zerog.jsms4pi.at.AAT;
 import cz.zerog.jsms4pi.exception.GatewayException;
@@ -42,7 +43,7 @@ import cz.zerog.jsms4pi.notification.Notification;
  */
 public class NullGateway extends Thread implements Gateway {
 
-	private final Logger log = LogManager.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(NullGateway.class);
 
 	public NullGateway() {
 

@@ -42,14 +42,10 @@ public class SendSMSExample implements OutboundMessageGatewayListener {
 	/**
 	 * Create and setup the gateway to the outgoing sending messages
 	 * 
-	 * @param port
-	 *            port name
-	 * @param text
-	 *            text of message
-	 * @param number
-	 *            destination number
-	 * @param service
-	 *            number of SMS service
+	 * @param port    port name
+	 * @param text    text of message
+	 * @param number  destination number
+	 * @param service number of SMS service
 	 * 
 	 * @throws GatewayException
 	 * @throws IOException
@@ -99,8 +95,7 @@ public class SendSMSExample implements OutboundMessageGatewayListener {
 	}
 
 	/**
-	 * Called when a outbound message is delivered or expired time for
-	 * delivering
+	 * Called when a outbound message is delivered or expired time for delivering
 	 */
 	@Override
 	public void outboundMessageEvent(OutboundMessageEvent event) {
@@ -111,17 +106,18 @@ public class SendSMSExample implements OutboundMessageGatewayListener {
 		case EXPIRED:
 			System.out.println("Time expired. " + event.getMessage().getDestination());
 			break;
+		default:
+			break;
 		}
 	}
 
 	/**
 	 * Parse parameters or asking user for information.
 	 * 
-	 * Parameters: -p name of a serial port -h show this information -d
-	 * destination number -t text of message -s service number
+	 * Parameters: -p name of a serial port -h show this information -d destination
+	 * number -t text of message -s service number
 	 * 
-	 * Interactive mode is activated when starting the program without
-	 * parameters.
+	 * Interactive mode is activated when starting the program without parameters.
 	 * 
 	 * @param args
 	 * @throws GatewayException
@@ -146,7 +142,6 @@ public class SendSMSExample implements OutboundMessageGatewayListener {
 		System.out.println("SMS servise number: " + serviceNum);
 
 		Tool.pressEnter();
-		Tool.activeLoggingToFile();
 
 		new SendSMSExample().send(port, text, number, serviceNum);
 	}

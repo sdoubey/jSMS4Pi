@@ -29,8 +29,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.pi4j.io.serial.Baud;
+import com.pi4j.io.serial.DataBits;
+import com.pi4j.io.serial.Parity;
+import com.pi4j.io.serial.StopBits;
 
 import cz.zerog.jsms4pi.exception.GatewayException;
 import cz.zerog.jsms4pi.listener.GatewayStatusListener;
@@ -67,7 +72,7 @@ public final class Service implements Runnable {
 		return StaticHolder.INSTANCE;
 	}
 
-	private final Logger log = LogManager.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(Service.class);
 	private final Thread serviceThread;
 
 	private final Map<String, Gateway> gateways = new HashMap<String, Gateway>();
@@ -94,8 +99,8 @@ public final class Service implements Runnable {
 		this.addGateway(ATGateway.getDefaultFactory(portPath), gatewayName);
 	}
 
-	public void addDefaultGateway(String portname, int serialSpeed, int databit, int stopbit, int parity, int atTimeOut,
-			String portPath, String gatewayName) {
+	public void addDefaultGateway(String portname, Baud serialSpeed, DataBits databit, StopBits stopbit, Parity parity,
+			int atTimeOut, String portPath, String gatewayName) {
 		this.addGateway(ATGateway.getDefaultFactory(portname, serialSpeed, databit, stopbit, parity, atTimeOut),
 				gatewayName);
 	}
@@ -123,7 +128,7 @@ public final class Service implements Runnable {
 			}
 			gateway.close();
 		} catch (Exception e) {
-			log.warn(e, e);
+			log.warn("Service", e);
 		}
 	}
 
@@ -146,7 +151,7 @@ public final class Service implements Runnable {
 		try {
 			g.setSmsServiceAddress(serviceNumber);
 		} catch (GatewayException e) {
-			log.warn(e, e);
+			log.warn("Service", e);
 		}
 	}
 
@@ -230,7 +235,7 @@ public final class Service implements Runnable {
 			} catch (InterruptedException e) {
 				log.info("interrupted");
 			} catch (Exception e) {
-				log.warn(e, e);
+				log.warn("Service", e);
 			}
 		}
 	}

@@ -25,15 +25,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.config.builder.api.AppenderComponentBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilder;
-import org.apache.logging.log4j.core.config.builder.api.ConfigurationBuilderFactory;
-import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
-
 /**
  * Tool Class Library
  * 
@@ -206,26 +197,6 @@ public final class Tool {
 
 	public static boolean verbose(String[] args) {
 		return existParameter(args, "-v");
-	}
-
-	public static LoggerContext activeLoggingToFile() {
-		ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
-
-		builder.setStatusLevel(Level.ERROR);
-		builder.setConfigurationName("BuilderTest");
-
-		builder.add(builder.newFilter("ThresholdFilter", Filter.Result.ACCEPT, Filter.Result.NEUTRAL)
-				.addAttribute("level", Level.DEBUG));
-
-		AppenderComponentBuilder appenderBuilder = builder.newAppender("file", "file");
-		appenderBuilder.addAttribute("fileName", "jSMS4Pi.log");
-
-		appenderBuilder.add(builder.newLayout("PatternLayout").addAttribute("pattern", "%d %t %-5p %c{2} - %m%n"));
-		builder.add(appenderBuilder);
-
-		builder.add(builder.newRootLogger(Level.INFO).add(builder.newAppenderRef("file")));
-
-		return Configurator.initialize(builder.build());
 	}
 
 	private static String existParameterWithValue(String[] args, String param) {

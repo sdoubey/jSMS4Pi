@@ -30,6 +30,7 @@ import cz.zerog.jsms4pi.at.AAT;
  *
  * @author zerog
  */
+@SuppressWarnings("serial")
 public class AtParseException extends IllegalArgumentException {
 
 	private final static String desc = "Cannot parse resut of AT. Problematic section in the pattern near index ";

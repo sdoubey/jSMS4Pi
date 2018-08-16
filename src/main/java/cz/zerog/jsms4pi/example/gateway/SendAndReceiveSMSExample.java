@@ -45,14 +45,10 @@ public class SendAndReceiveSMSExample implements OutboundMessageGatewayListener,
 	/**
 	 * Create and setup the gateway to the outgoing sending messages
 	 * 
-	 * @param port
-	 *            port where is modem
-	 * @param text
-	 *            text of message
-	 * @param number
-	 *            destination number
-	 * @param service
-	 *            number of SMS service
+	 * @param port    port where is modem
+	 * @param text    text of message
+	 * @param number  destination number
+	 * @param service number of SMS service
 	 * 
 	 * @throws GatewayException
 	 * @throws IOException
@@ -101,8 +97,7 @@ public class SendAndReceiveSMSExample implements OutboundMessageGatewayListener,
 	}
 
 	/**
-	 * Is called when a outbound message is delivered or expired time for
-	 * delivering
+	 * Is called when a outbound message is delivered or expired time for delivering
 	 */
 	@Override
 	public void outboundMessageEvent(OutboundMessageEvent event) {
@@ -112,6 +107,8 @@ public class SendAndReceiveSMSExample implements OutboundMessageGatewayListener,
 			break;
 		case EXPIRED:
 			System.out.println("Time expired. " + event.getMessage().getDestination());
+			break;
+		default:
 			break;
 		}
 	}
@@ -128,11 +125,10 @@ public class SendAndReceiveSMSExample implements OutboundMessageGatewayListener,
 	/**
 	 * Parse parameters or asking user for information.
 	 * 
-	 * Parameters: -p name of a serial port -h show this information -d
-	 * destination number -t text of message -s service number
+	 * Parameters: -p name of a serial port -h show this information -d destination
+	 * number -t text of message -s service number
 	 * 
-	 * Interactive mode is activated when starting the program without
-	 * parameters.
+	 * Interactive mode is activated when starting the program without parameters.
 	 * 
 	 * @param args
 	 * @throws GatewayException
@@ -158,7 +154,6 @@ public class SendAndReceiveSMSExample implements OutboundMessageGatewayListener,
 		System.out.println("SMS servise number: " + serviceNum);
 
 		Tool.pressEnter();
-		Tool.activeLoggingToFile();
 
 		new SendAndReceiveSMSExample().send(port, text, number, serviceNum);
 	}

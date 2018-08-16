@@ -28,8 +28,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.pi4j.io.serial.Baud;
+import com.pi4j.io.serial.DataBits;
+import com.pi4j.io.serial.Parity;
+import com.pi4j.io.serial.StopBits;
 
 import cz.zerog.jsms4pi.at.AAT;
 import cz.zerog.jsms4pi.at.AT;
@@ -92,19 +97,9 @@ import cz.zerog.jsms4pi.tool.TypeOfMemory;
  */
 public class ATGateway implements Gateway {
 
-	private final Logger log = LogManager.getLogger();
+	private static final Logger log = LoggerFactory.getLogger(ATGateway.class);
 
 	private final Configurator config = new Configurator();
-
-	/*
-	 * RS-232 default setting
-	 */
-	private final static int BOUDRATE = 57600;
-	// private final static int AT_RESPONSE_TO = 5 * 1000;
-	private final static int AT_RESPONSE_TO = 30 * 1000;
-	private final static int DATA_BIT = 8;
-	private final static int STOP_BIT = 1;
-	private final static int PARITY = 0; // NONE
 
 	/**
 	 * Modem
@@ -150,7 +145,7 @@ public class ATGateway implements Gateway {
 	private NetworkCellGatewayListener networkCellListener;
 	private GatewayStatusGatewayListener gatewayStatusListener;
 
-	public ATGateway(Modem modem) {
+	public ATGateway(SerialModem modem) {
 		this.modem = modem;
 	}
 
@@ -162,8 +157,11 @@ public class ATGateway implements Gateway {
 	 * @param serialPortName
 	 * @return
 	 */
-	public static ATGateway getDefaultFactory(String serialPortName) {
-		return getDefaultFactory(serialPortName, BOUDRATE);
+	public static ATGateway getDefaultFactory(String portname) {
+		SerialModem modem = new SerialModem(portname);
+		ATGateway gateway = new ATGateway(modem);
+		modem.setGatewayListener(gateway);
+		return gateway;
 	}
 
 	/**
@@ -175,8 +173,11 @@ public class ATGateway implements Gateway {
 	 * @param boudrate boud rate speed of modem
 	 * @return new Gateway
 	 */
-	public static ATGateway getDefaultFactory(String portname, int boudrate) {
-		return getDefaultFactory(portname, boudrate, DATA_BIT, STOP_BIT, PARITY, AT_RESPONSE_TO);
+	public static ATGateway getDefaultFactory(String portname, Baud boudrate) {
+		SerialModem modem = new SerialModem(portname, boudrate);
+		ATGateway gateway = new ATGateway(modem);
+		modem.setGatewayListener(gateway);
+		return gateway;
 	}
 
 	/**
@@ -190,9 +191,9 @@ public class ATGateway implements Gateway {
 	 * @param atTimeOut time out of response
 	 * @return new Gateway
 	 */
-	public static ATGateway getDefaultFactory(String portname, int boudrate, int databit, int stopbit, int parity,
-			int atTimeOut) {
-		Modem modem = new SerialModem(portname, boudrate, databit, stopbit, parity, atTimeOut);
+	public static ATGateway getDefaultFactory(String portname, Baud boudrate, DataBits databit, StopBits stopbit,
+			Parity parity, int atTimeOut) {
+		SerialModem modem = new SerialModem(portname, boudrate, databit, stopbit, parity, atTimeOut);
 		ATGateway gateway = new ATGateway(modem);
 		modem.setGatewayListener(gateway);
 		return gateway;

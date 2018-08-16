@@ -1,6 +1,6 @@
 package cz.zerog.jsms4pi.exception;
 
-import jssc.SerialPortException;
+import com.pi4j.io.serial.SerialPortException;
 
 /*
  * #%L
@@ -28,6 +28,7 @@ import jssc.SerialPortException;
  *
  * @author zerog
  */
+@SuppressWarnings("serial")
 public class GatewayException extends Exception {
 
 	public static final String SERVISE_READ_ERR = "Cannot read the message servis number";
@@ -37,19 +38,12 @@ public class GatewayException extends Exception {
 	public static final String SERIAL_ERROR = "The serial port refuse parameters";
 	public static final String CANNOT_SEND = "Cannot send the text message";
 
-	private String port;
-	private String errorMessage;
-
 	public GatewayException(SerialPortException cause) {
 		super(cause);
-		this.port = cause.getPortName();
-		this.errorMessage = cause.getExceptionType();
 	}
 
 	public GatewayException(String errorMessage, String port) {
 		super(errorMessage + ". Port: " + port);
-		this.port = port;
-		this.errorMessage = errorMessage;
 	}
 
 	public GatewayException(CmsError error, String port) {
@@ -58,14 +52,6 @@ public class GatewayException extends Exception {
 
 	public GatewayException(String message, CmsError error, String port) {
 		this(message + ". " + cmsToString(error), port);
-	}
-
-	public String getPortName() {
-		return port;
-	}
-
-	public String getErrorMessage() {
-		return errorMessage;
 	}
 
 	private static String cmsToString(CmsError cmsError) {
